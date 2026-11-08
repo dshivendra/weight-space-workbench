@@ -123,7 +123,7 @@ python3 -m pip install 'git+https://github.com/agentskills/agentskills.git@83021
 for skill in .agents/skills/*; do skills-ref validate "$skill"; done
 ```
 
-The repository has a format validator and behavior tests for the bundled utilities. Skill behavior still needs to be exercised with scenario prompts in each target agent; static validation cannot prove that an agent activates or follows a skill. See [skill authoring and review](docs/SKILL_AUTHORING.md) and the [workflow contract](docs/WORKFLOW.md).
+The repository has a format validator and behavior tests for the bundled utilities. GitHub Actions also runs a Safetensors integration job that installs the optional PyTorch/Safetensors dependencies. To run that integration locally, install `requirements-safetensors.txt` and run `python3 -m unittest discover -s tests -p 'test_safetensors_editor_integration.py' -v`. Skill behavior still needs to be exercised with scenario prompts in each target agent; static validation cannot prove that an agent activates or follows a skill. See [skill authoring and review](docs/SKILL_AUTHORING.md) and the [workflow contract](docs/WORKFLOW.md).
 
 ## Repository visibility
 

@@ -4,6 +4,7 @@
 
 - Strengthen skill descriptions, provenance, output contracts, and keep/revert rules.
 - Add specification-aware Agent Skills validation, utility tests, and CI across Python 3.10–3.12.
+- Add an optional-dependency CI job that exercises real Safetensors edits, receipts, and no-overwrite behavior.
 - Make metric comparison inconclusive until uncertainty evidence is supplied.
 - Make the Safetensors edit write outputs through temporary files, verify the saved scalar, and refuse concurrent destination collisions.
 - Rewrite the README with install/use guidance, support boundaries, quality badges, and a disclosed visitor counter.
