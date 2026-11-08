@@ -17,6 +17,8 @@ The `name` must match the containing directory, be lowercase, and use only lette
 
 The specification recommends keeping the main instructions under 5,000 tokens and 500 lines. Put detailed, infrequently needed material in a small `references/` file and link it directly from `SKILL.md`. Do not build deep chains of reference links.
 
+Supporting files are optional in the format; include only files that materially improve this skill. This repository keeps at least one small `evals/evals.json` scenario suite per skill to make intended behavior reviewable. When a script or asset is needed after installation, keep it inside that skill folder and use paths relative to its root. The installer copies each entire skill directory.
+
 ## Writing bar
 
 1. **Give each skill one job.** Its description should make activation clear: what task or symptoms call for it. Avoid descriptions that are only a summary of the procedure.
@@ -25,8 +27,10 @@ The specification recommends keeping the main instructions under 5,000 tokens an
 4. **Name failure modes.** Explain what to do when prerequisites, artifacts, permissions, or evidence are missing. Do not let a skill turn an unknown into a success claim.
 5. **Define the handoff.** State the expected file or structured result and who consumes it next. Keep field names consistent with `templates/run-record.json`.
 6. **Keep it portable.** Do not assume a particular agent host, hidden memory, tool, model provider, or credential. Mention a host only when a compatibility requirement truly depends on it.
-7. **Use progressive disclosure.** Keep universal instructions in `SKILL.md`; put long schemas, reference tables, or vendor details in a directly linked reference file.
-8. **Use one strong example.** Prefer a complete example that demonstrates the decision over many generic examples or a blank template without guidance.
+7. **Use progressive disclosure.** Keep universal instructions in `SKILL.md`; put detailed domain material in directly linked `references/` files. Bundle repeatable deterministic work as a skill-local `scripts/` program. Put reusable templates in `assets/`.
+8. **Make skills installable on their own.** Resolve supporting file paths from the skill directory. Do not depend on repository-root files after installation unless the skill explicitly requires the full repository.
+9. **Use one strong example.** Prefer a complete example that demonstrates the decision over many generic examples or a blank template without guidance.
+10. **Keep scenario evals with the skill.** Add realistic prompts, expected outcomes, and observable assertions in `evals/evals.json`; cover missing inputs and pressure to bypass a safety gate. Static checks verify file and schema shape, but a target agent must execute and grade the cases.
 
 Stageshow demonstrates a useful authoring pattern: one clear thesis, concrete failure modes, and a workflow that makes quality decisions explicit. Superpowers adds scenario-based pressure testing for procedural skills. gstack shows how explicit inputs, outputs, gates, and routing fit into a larger skill system. Apply these patterns proportionally; this repository does not need host-specific hooks to benefit from focused skills and explicit handoffs.
 
@@ -62,3 +66,5 @@ for skill in .agents/skills/*; do skills-ref validate "$skill"; done
 ```
 
 The reference project labels itself demonstration-only, so it is an independent format cross-check, not the project's production validator.
+
+The project validator also checks that paths named under `scripts/`, `references/`, `assets/`, and `evals/` resolve inside their skill folder, and that scenario eval files contain unique IDs, prompts, expected outcomes, and assertions. This is a structural check. It does not run an agent, grade its answers, or prove that a skill activates reliably. Behavior evaluation needs clean with-skill and without-skill runs in the intended client, with outputs and assertion evidence reviewed by a person.

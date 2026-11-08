@@ -4,7 +4,7 @@ description: "Use only after a valid baseline and falsifiable edit hypothesis ex
 license: MIT
 compatibility: The bundled script edits a single Safetensors checkpoint using PyTorch and Safetensors; other formats need a format-specific adapter.
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   category: machine-learning
 ---
 
@@ -20,6 +20,13 @@ metadata:
 
 ## Output
 
-Use `scripts/apply_safetensors_delta.py` for its supported format. It changes one scalar and writes a candidate checkpoint plus an edit receipt. It does not decide which weight should change and does not imply that the edit is beneficial. Record candidate and receipt paths in the run record.
+Use the bundled `scripts/apply_safetensors_delta.py` for its supported format. Run it from this skill directory, or call the repository compatibility launcher `python3 scripts/apply_safetensors_delta.py` from the repository root. It changes one scalar and writes a candidate checkpoint plus an edit receipt. It does not decide which weight should change and does not imply that the edit is beneficial. Record candidate and receipt paths in the run record.
 
 If the checkpoint format is not Safetensors, do not convert it silently. Use the framework's supported load/save API and preserve the same no-overwrite and provenance guarantees.
+
+## Supporting files
+
+- The bundled `scripts/apply_safetensors_delta.py` is the executable editor; its CLI exposes required arguments and bounds through `--help`.
+- Compare the generated receipt with `assets/edit-receipt.json`; placeholders in the example are not valid hashes.
+- Read `references/safetensors-editor.md` for supported inputs, atomic-write behavior, and failure meanings.
+- Review `evals/evals.json` for stale-source, existing-output, and out-of-bounds edit cases.

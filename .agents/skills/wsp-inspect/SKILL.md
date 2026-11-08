@@ -3,7 +3,7 @@ name: wsp-inspect
 description: "Use after baseline measurement and before selecting tensors. Inspect architecture, parameter metadata, and failure examples to form a cautious, testable weight-edit hypothesis—or conclude that no edit is justified."
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   category: machine-learning
 ---
 
@@ -30,4 +30,10 @@ Use executable analysis for tensor statistics and model probes. Do not dump enti
 
 ## Output
 
-Fill `templates/edit-hypothesis.md` with observations, interpretation, alternative explanations, tensor and coordinate scope, expected metric change, bounds, and a disconfirming result. If the evidence does not justify a causal hypothesis, report `no-edit` and stop before the editor.
+Fill `assets/edit-hypothesis.md` with observations, interpretation, alternative explanations, tensor and coordinate scope, expected metric change, bounds, and a disconfirming result. If the full repository is checked out, you may mirror it to `templates/edit-hypothesis.md`. If the evidence does not justify a causal hypothesis, report `no-edit` and stop before the editor.
+
+## Supporting files
+
+- For a Safetensors checkpoint, run `python3 scripts/inspect_safetensors.py CHECKPOINT --max-tensors 200` to emit bounded tensor metadata without dumping values.
+- Read `references/hypothesis-quality.md` before linking a parameter to behavior; it separates observation from causal interpretation.
+- Review `evals/evals.json` for unsupported format and weak causal-evidence cases.

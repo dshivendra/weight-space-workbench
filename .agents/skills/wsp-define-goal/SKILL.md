@@ -3,7 +3,7 @@ name: wsp-define-goal
 description: "Use before a neural-network baseline, weight edit, or fine-tuning comparison. Convert the requested behavior into a measurable contract with a target metric, guardrails, data splits, and stop conditions."
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   category: machine-learning
 ---
 
@@ -32,4 +32,11 @@ Create a concise contract before touching weights.
 
 ## Output
 
-Write `goal.json` using the matching fields in `templates/run-record.json`, or summarize the same fields in the run record. Mark unknown values explicitly as `unknown`; never invent model or dataset details.
+Write `goal.json` using `assets/goal-contract.json`. If the full repository is checked out, you may also fill the matching task fields in `templates/run-record.json`. Mark unknown values explicitly as `unknown`; never invent model or dataset details.
+
+## Supporting files
+
+- Run `python3 scripts/validate_goal_contract.py CONTRACT.json` before collecting a baseline.
+- Use `assets/goal-contract.json` as the portable output skeleton; fill unknowns explicitly.
+- Read `references/contract-fields.md` when deciding what evidence belongs in each contract field.
+- Review `evals/evals.json` for the ambiguous-goal and missing-baseline cases this skill must handle.

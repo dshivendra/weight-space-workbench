@@ -1,0 +1,10 @@
+{
+  "baseline_candidate_hashes": {"baseline": "sha256:...", "candidate": "sha256:..."},
+  "data": {"dataset_revision": "", "split": "", "sample_count": 0},
+  "evaluator_revision": "",
+  "settings_match": true,
+  "results": {"baseline": {}, "candidate": {}},
+  "paired_uncertainty": {"method": "", "interval": null, "confidence_level": null},
+  "guardrails": [],
+  "failures": []
+}

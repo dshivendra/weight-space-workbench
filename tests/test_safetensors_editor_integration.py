@@ -19,6 +19,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "apply_safetensors_delta.py"
+INSPECT_SCRIPT = ROOT / ".agents" / "skills" / "wsp-inspect" / "scripts" / "inspect_safetensors.py"
 
 
 @unittest.skipIf(torch is None, "install requirements-safetensors.txt for integration tests")
@@ -87,6 +88,20 @@ class SafetensorsEditorIntegrationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(destination.read_bytes(), b"keep this file")
         self.assertFalse(destination.with_suffix(".safetensors.edit.json").exists())
+
+    def test_inspector_emits_bounded_metadata_without_values(self):
+        result = subprocess.run(
+            [sys.executable, str(INSPECT_SCRIPT), str(self.source), "--max-tensors", "1"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual(report["tensor_count"], 1)
+        self.assertEqual(report["tensors"][0]["name"], "policy.weight")
+        self.assertEqual(report["tensors"][0]["shape"], [2])
+        self.assertNotIn("values", report["tensors"][0])
 
 
 if __name__ == "__main__":

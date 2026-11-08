@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "run_id": "replace-with-unique-id",
+  "created_at_utc": "replace-with-ISO-8601-time",
+  "model": {
+    "repo_id": "owner/model",
+    "revision": "immutable-commit-hash",
+    "artifact_sha256": "sha256:...",
+    "architecture": "",
+    "license": ""
+  },
+  "task": {
+    "goal": "",
+    "inputs_and_preprocessing": "",
+    "deployment_context": "simulation | offline | hardware",
+    "primary_metric": "",
+    "primary_metric_direction": "lower | higher",
+    "minimum_relative_improvement": 0.0,
+    "guardrails": []
+  },
+  "evaluation": {
+    "dataset_id": "",
+    "dataset_revision": "",
+    "dataset_sha256": "sha256:...",
+    "split": "",
+    "evaluator_revision": "",
+    "seed": 0,
+    "sample_count": 0,
+    "baseline_metrics": {},
+    "candidate_metrics": {},
+    "uncertainty_method": ""
+  },
+  "edit": {
+    "method": "direct-weight-edit | fine-tune | none",
+    "hypothesis": "",
+    "tensor": "",
+    "index": [],
+    "before": null,
+    "after": null,
+    "candidate_sha256": "sha256:...",
+    "receipt_path": ""
+  },
+  "decision": {
+    "outcome": "keep | revert | inconclusive",
+    "reason": "",
+    "reviewer": ""
+  }
+}

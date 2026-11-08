@@ -1,0 +1,5 @@
+{
+  "example_ids": ["example-001", "example-002", "example-003"],
+  "baseline": [0.42, 0.18, 0.66],
+  "candidate": [0.38, 0.20, 0.61]
+}

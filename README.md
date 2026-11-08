@@ -29,7 +29,9 @@ No baseline means no edit. If a tensor cannot be connected to the observed failu
 
 ## Skills
 
-Each skill has one job, a clear activation description, an operational procedure, and a defined handoff. The full workflow is in `wsp-loop`.
+Each skill has one job, a clear activation description, an operational procedure, and a defined handoff. Skill folders bundle the supporting references, scripts, assets, and scenario evals their task needs; the installer copies these with `SKILL.md`. The full workflow is in `wsp-loop`.
+
+Open a skill's `SKILL.md` first. It links the supporting files to load only when relevant. For example, `wsp-inspect` has a metadata-only Safetensors inspector and a hypothesis evidence guide; `wsp-edit` bundles the bounded editor; and `wsp-loop` bundles a run-record check. Each skill also has `evals/evals.json` with scenario prompts and observable assertions. These cases are fixtures for target-agent evaluation, not results that have already passed.
 
 | Skill | Use it to | Handoff |
 |---|---|---|
@@ -123,7 +125,7 @@ python3 -m pip install 'git+https://github.com/agentskills/agentskills.git@83021
 for skill in .agents/skills/*; do skills-ref validate "$skill"; done
 ```
 
-The repository has a format validator and behavior tests for the bundled utilities. GitHub Actions also runs a Safetensors integration job that installs the optional PyTorch/Safetensors dependencies. To run that integration locally, install `requirements-safetensors.txt` and run `python3 -m unittest discover -s tests -p 'test_safetensors_editor_integration.py' -v`. Skill behavior still needs to be exercised with scenario prompts in each target agent; static validation cannot prove that an agent activates or follows a skill. See [skill authoring and review](docs/SKILL_AUTHORING.md) and the [workflow contract](docs/WORKFLOW.md).
+The repository validator checks frontmatter, skill-local resource paths, and the schema shape of each `evals/evals.json`. It does not grade model-generated skill behavior. Run each scenario with and without the skill in clean sessions, save outputs and assertion evidence, review execution traces, then revise and rerun. Do not claim a behavior eval passed based on static validation alone. See [skill authoring and review](docs/SKILL_AUTHORING.md) and the [workflow contract](docs/WORKFLOW.md).
 
 ## Repository visibility
 
@@ -142,7 +144,7 @@ The README views badge is provided by [Visitor Badge](https://visitor-badge.laob
 ## Project files
 
 ```text
-.agents/skills/   Portable Agent Skills
+.agents/skills/   Portable Agent Skills with references, scripts, assets, and eval cases
 docs/             Workflow, formats, and authoring guidance
 examples/         Synthetic, fully transparent demonstration
 scripts/          Bounded utilities and validation

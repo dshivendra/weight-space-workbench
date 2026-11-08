@@ -3,7 +3,7 @@ name: wsp-release
 description: "Use only after a candidate has passed the keep decision and the user requests release. Package a weight-edit derivative with model, data, evaluator, license, and reproducibility provenance."
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   category: machine-learning
 ---
 
@@ -18,3 +18,10 @@ metadata:
 7. Clearly label the release as a research derivative. Do not describe offline metrics as proof of physical safety.
 
 If publishing credentials or repository access are unavailable, prepare the release directory and provide the exact upload command without claiming publication succeeded.
+
+## Supporting files
+
+- Use `assets/release-manifest.json` to record the checkpoint hash, base revision, license, dataset/evaluator provenance, decision, and limitations.
+- From the skill directory, run `python3 scripts/verify_release_bundle.py PATH_TO_RELEASE/release-manifest.json` before packaging; the checkpoint path is resolved relative to the manifest.
+- Read `references/derivative-release.md` for redistribution and provenance checks.
+- Review `evals/evals.json` for non-keep, missing-license, and artifact-tampering cases.

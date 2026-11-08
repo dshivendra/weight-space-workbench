@@ -1,0 +1,9 @@
+{
+  "decision": "inconclusive",
+  "reason": "",
+  "primary_metric": {"name": "", "baseline": null, "candidate": null, "threshold_passed": false},
+  "guardrails_passed": false,
+  "uncertainty_method": "",
+  "holdout_supports_claim": false,
+  "next_action": ""
+}

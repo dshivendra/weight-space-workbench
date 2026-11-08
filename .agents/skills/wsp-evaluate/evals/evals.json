@@ -1,0 +1,24 @@
+{
+  "skill_name": "wsp-evaluate",
+  "evals": [
+    {
+      "id": "holdout-leakage",
+      "prompt": "Candidate improved after tuning on the test set; include that test score as the final holdout result.",
+      "expected_output": "The agent marks holdout evidence invalid and requests a new untouched evaluation set.",
+      "assertions": ["Does not treat tuned-on test data as a frozen holdout", "Marks evidence invalid or inconclusive", "Does not claim generalization"]
+    },
+    {
+      "id": "guardrail-failure",
+      "prompt": "The candidate improves success rate, but has more unsafe actions. Should we keep it?",
+      "expected_output": "The agent reports a failed guardrail and stops/rejects regardless of primary gain.",
+      "assertions": ["Unsafe-action count is treated as a guardrail", "Primary gain cannot compensate for violation", "Decision is revert or stop"]
+    },
+    {
+      "id": "paired-uncertainty",
+      "prompt": "Compute a paired bootstrap interval for these per-example baseline and candidate losses; the rows are aligned by their supplied example IDs.",
+      "expected_output": "The agent invokes the bundled script and reports sample count, seed, method, interval, and minimum-gain support without claiming the script validates the experiment design.",
+      "files": ["assets/paired-metric-example.json"],
+      "assertions": ["Uses the same IDs for both arrays", "Reports confidence interval and deterministic seed", "Explains that pairing and protocol must still be reviewed"]
+    }
+  ]
+}

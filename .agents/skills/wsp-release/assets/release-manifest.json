@@ -1,0 +1,11 @@
+{
+  "base_model_id": "",
+  "base_revision": "",
+  "license": "",
+  "dataset_revision": "",
+  "evaluator_revision": "",
+  "decision": "keep",
+  "limitations": [],
+  "checkpoint_path": "candidate.safetensors",
+  "checkpoint_sha256": "sha256:"
+}
