@@ -6,6 +6,7 @@ Thanks for helping improve Weight Space Workbench.
 
 - Keep each skill focused on one clear task and usable without relying on hidden project context.
 - Preserve the standard `SKILL.md` frontmatter (`name`, `description`) and progressive-disclosure pattern.
+- Keep descriptions precise about when the skill should activate; define concrete inputs, outputs, stop conditions, and handoffs in the body.
 - Separate verified behavior from hypotheses. Avoid claims that a raw weight pattern proves a model capability.
 - Keep model edits explicit, bounded, reversible, and tied to a pinned checkpoint.
 - Never add model weights, private data, tokens, or credentials to the repository.
@@ -21,3 +22,5 @@ Thanks for helping improve Weight Space Workbench.
 ## Skill format
 
 Follow the current Agent Skills specification at <https://agentskills.io/specification>. Keep each skill's trigger description precise and its instructions operational. Put optional material in `references/` instead of expanding the main instruction file unnecessarily.
+
+For the project quality checks, see [skill authoring and review](docs/SKILL_AUTHORING.md). Pull requests should pass the GitHub Actions quality workflow and include any relevant scenario evidence.

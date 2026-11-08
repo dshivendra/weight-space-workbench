@@ -2,7 +2,7 @@
 
 ## Scope
 
-Report security issues in the scripts or workflow through a private GitHub Security Advisory when available. Do not include secrets, private checkpoints, or personal data in a public issue.
+Report security issues in the scripts or workflow through [GitHub private vulnerability reporting](https://github.com/dshivendra/weight-space-workbench/security/advisories/new) when available. If it is unavailable, contact the maintainer privately through GitHub. Do not include secrets, private checkpoints, or personal data in a public issue.
 
 ## Safety boundaries
 

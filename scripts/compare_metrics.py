@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply a preregistered keep/revert rule to baseline and candidate metric JSON."""
+"""Compare preregistered metrics; point estimates alone cannot justify a keep."""
 
 from __future__ import annotations
 
@@ -48,11 +48,26 @@ def main() -> int:
     parser.add_argument("--primary", required=True, help="Primary metric key")
     parser.add_argument("--direction", choices=("lower", "higher"), required=True)
     parser.add_argument("--min-relative-improvement", type=float, default=0.0)
+    parser.add_argument("--min-absolute-improvement", type=float, default=0.0)
+    parser.add_argument(
+        "--uncertainty-status",
+        choices=("passed", "failed", "unknown"),
+        default="unknown",
+        help="Result of the preregistered uncertainty analysis (computed externally)",
+    )
+    parser.add_argument(
+        "--uncertainty-method",
+        help="Name the paired uncertainty method when --uncertainty-status=passed",
+    )
     parser.add_argument("--guard", action="append", type=parse_guard, default=[])
     args = parser.parse_args()
 
     if not math.isfinite(args.min_relative_improvement) or args.min_relative_improvement < 0:
         parser.error("min-relative-improvement must be finite and non-negative")
+    if not math.isfinite(args.min_absolute_improvement) or args.min_absolute_improvement < 0:
+        parser.error("min-absolute-improvement must be finite and non-negative")
+    if args.uncertainty_status == "passed" and not args.uncertainty_method:
+        parser.error("--uncertainty-method is required when uncertainty status is passed")
     try:
         baseline = read_metrics(args.baseline)
         candidate = read_metrics(args.candidate)
@@ -65,9 +80,13 @@ def main() -> int:
     before = baseline[args.primary]
     after = candidate[args.primary]
     gain = before - after if args.direction == "lower" else after - before
-    denominator = abs(before)
-    relative_gain = gain / denominator if denominator > 0 else (math.inf if gain > 0 else 0.0)
-    primary_pass = gain > 0 and relative_gain >= args.min_relative_improvement
+    relative_gain = gain / abs(before) if before != 0 else None
+    relative_pass = relative_gain >= args.min_relative_improvement if relative_gain is not None else True
+    primary_pass = (
+        gain > 0
+        and gain >= args.min_absolute_improvement
+        and relative_pass
+    )
 
     guard_results = []
     for name, operator, limit in args.guard:
@@ -83,24 +102,35 @@ def main() -> int:
             "passed": passed,
         })
 
-    keep = primary_pass and all(result["passed"] for result in guard_results)
+    guardrails_pass = all(result["passed"] for result in guard_results)
+    if not guardrails_pass or not primary_pass:
+        decision = "revert"
+    elif args.uncertainty_status == "passed":
+        decision = "keep"
+    else:
+        decision = "inconclusive"
     report = {
-        "decision": "keep" if keep else "revert_or_inconclusive",
+        "decision": decision,
         "primary": {
             "metric": args.primary,
             "direction": args.direction,
             "baseline": before,
             "candidate": after,
             "absolute_gain": gain,
-            "relative_gain": relative_gain if math.isfinite(relative_gain) else None,
+            "relative_gain": relative_gain,
+            "minimum_absolute_improvement": args.min_absolute_improvement,
             "minimum_relative_improvement": args.min_relative_improvement,
             "passed": primary_pass,
         },
         "guardrails": guard_results,
-        "uncertainty_note": "This utility does not estimate statistical uncertainty; evaluate that separately.",
+        "uncertainty": {
+            "status": args.uncertainty_status,
+            "method": args.uncertainty_method,
+            "source": "caller-provided; this utility does not estimate uncertainty",
+        },
     }
     print(json.dumps(report, indent=2))
-    return 0 if keep else 1
+    return {"keep": 0, "revert": 1, "inconclusive": 2}[decision]
 
 
 if __name__ == "__main__":

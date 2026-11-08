@@ -1,8 +1,9 @@
 ---
 name: wsp-decide
-description: "Decide whether to keep, revert, or investigate a neural-network weight edit using acceptance rules declared before evaluation, including primary improvement, regression guardrails, uncertainty, and reproducibility."
+description: "Use after candidate evaluation to decide whether a neural-network weight edit is keepable, must be reverted, or is inconclusive under preregistered metrics, guardrails, uncertainty, and reproducibility rules."
+license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   category: machine-learning
 ---
 
@@ -24,4 +25,6 @@ Apply the experiment contract exactly as written before evaluation.
 - **Inconclusive** when evidence is underpowered, evaluation is incomplete, or the gain is within noise. Do not call inconclusive a success.
 - **New hypothesis** only after recording the prior attempt and its result. Do not silently tune thresholds or reuse the holdout as training data.
 
-Write the decision, rationale, metrics, and next action into the run record.
+## Output
+
+Write exactly one outcome—`keep`, `revert`, or `inconclusive`—with the rationale, metric evidence, guardrail results, uncertainty method, and next action in the run record. A point-estimate-only comparison is never enough for `keep`.

@@ -1,15 +1,16 @@
 ---
 name: wsp-loop
-description: "Orchestrate a complete, reproducible weight-space experiment: define a behavior target, pin model and data, measure a baseline, diagnose a failure, propose and apply a bounded weight edit, evaluate the candidate, and keep or revert it using preregistered criteria. Use when a user asks to inspect, edit, improve, or compare neural-network weights."
+description: "Use when a user asks to inspect, directly edit, improve, or compare neural-network weights. Coordinate a reproducible goal-to-baseline-to-hypothesis-to-edit-to-evaluation loop and make a keep, revert, or inconclusive decision from preregistered evidence."
+license: MIT
 compatibility: Requires access to model artifacts and a model-specific evaluator for empirical claims. Included editing utility supports single-file Safetensors checkpoints only.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   category: machine-learning
 ---
 
 # Weight-space experiment loop
 
-Run the experiment as a sequence of evidence-bearing stages. Do not skip stages because a user asks for a quick edit; reduce scope instead.
+Run the experiment as a sequence of evidence-bearing stages. Do not skip stages because a user asks for a quick edit; reduce scope instead. Before starting, confirm the model/checkpoint and evaluator are actually available. Never treat a synthetic example, planned command, or guessed tensor meaning as an experiment result.
 
 ## Sequence
 
@@ -20,6 +21,8 @@ Run the experiment as a sequence of evidence-bearing stages. Do not skip stages 
 5. Read `wsp-evaluate`. Run paired evaluation on the baseline examples and a frozen held-out set. Include all guardrail metrics and uncertainty.
 6. Read `wsp-decide`. Apply the acceptance rules declared before the edit. Keep, revert, or mark inconclusive; do not change thresholds after seeing results.
 7. Read `wsp-release` only for a kept candidate. Preserve provenance and publish as a derivative, never overwrite an upstream repository.
+
+At every handoff, check that the predecessor artifact exists and that its hashes and identifiers match the run record. A missing artifact means stop at that stage and report the blocker; do not fabricate the next stage's input.
 
 ## Evidence handoff
 
@@ -33,3 +36,7 @@ Use `templates/run-record.json` for the canonical run record and `templates/edit
 - Any failed guardrail means revert or stop.
 - For physical systems, no deployment from offline metrics alone; require simulation and bounded human-supervised validation.
 - If tools, dependencies, credentials, or artifacts are unavailable, report the blocker and preserve completed evidence. Never describe a proposed loop as a completed run.
+
+## Completion output
+
+Report the model and immutable revision, baseline/candidate hashes, edit receipt, paired and holdout metrics, uncertainty method, every guardrail result, final decision, and any stages not run. Say `inconclusive` when required evidence is missing.

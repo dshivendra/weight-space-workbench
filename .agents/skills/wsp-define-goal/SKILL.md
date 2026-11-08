@@ -1,8 +1,9 @@
 ---
 name: wsp-define-goal
-description: "Convert a request to change neural-network weights into a measurable experiment contract with a defined behavior, model, target metric, guardrails, data splits, and stop conditions. Use before any baseline, direct edit, or fine-tuning comparison."
+description: "Use before a neural-network baseline, weight edit, or fine-tuning comparison. Convert the requested behavior into a measurable contract with a target metric, guardrails, data splits, and stop conditions."
+license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   category: machine-learning
 ---
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 — 2026-11-08
+
+- Strengthen skill descriptions, provenance, output contracts, and keep/revert rules.
+- Add specification-aware Agent Skills validation, utility tests, and CI across Python 3.10–3.12.
+- Make metric comparison inconclusive until uncertainty evidence is supplied.
+- Make the Safetensors edit write outputs through temporary files, verify the saved scalar, and refuse concurrent destination collisions.
+- Rewrite the README with install/use guidance, support boundaries, quality badges, and a disclosed visitor counter.
+- Add skill authoring guidance based on the official specification and public skill examples.
+
 ## 0.1.0 — 2026-11-08
 
 - Add eight portable Agent Skills covering the weight-space experiment lifecycle.

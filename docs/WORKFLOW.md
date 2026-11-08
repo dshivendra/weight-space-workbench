@@ -11,7 +11,7 @@ The skill pack divides the work into focused responsibilities. `wsp-loop` owns s
 | Inspect | Baseline failure slices and model structure | Evidence-backed edit hypothesis or `no-edit` conclusion |
 | Edit | Approved hypothesis and immutable source | Candidate checkpoint and edit receipt |
 | Evaluate | Baseline, candidate, fixed test protocol | Paired metrics, holdout metrics, safety metrics |
-| Decide | Preregistered acceptance rules | `keep`, `revert`, or `new-hypothesis` decision |
+| Decide | Preregistered acceptance rules and uncertainty evidence | `keep`, `revert`, or `inconclusive` decision |
 | Release | Kept candidate and complete evidence | Versioned derivative, model card, and provenance |
 
 ## Decision protocol
@@ -21,6 +21,8 @@ The skill pack divides the work into focused responsibilities. `wsp-loop` owns s
 3. Use the held-out set only after the proposed edit is frozen. Do not tune against it.
 4. If results are noisy, use paired bootstrap confidence intervals or repeated deterministic seeds. A gain smaller than observed variation is inconclusive.
 5. Save rejected candidate receipts too. This prevents the same failed edit from being rediscovered as if it were new evidence.
+
+`scripts/compare_metrics.py` compares aggregate metric values and absolute candidate guard limits. It does not estimate uncertainty or validate held-out evaluation. Without a caller-provided, documented uncertainty pass, the tool returns `inconclusive` even when the point estimate meets its target. The caller must retain the paired analysis and holdout results in the run record.
 
 ## Direct edit versus fine-tuning
 

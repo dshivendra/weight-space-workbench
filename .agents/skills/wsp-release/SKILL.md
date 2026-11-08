@@ -1,8 +1,9 @@
 ---
 name: wsp-release
-description: "Package a validated weight-edit derivative with model/data/evaluator provenance, license review, model card changes, and reproducible results. Use only after the keep decision and when the user requests publication or release."
+description: "Use only after a candidate has passed the keep decision and the user requests release. Package a weight-edit derivative with model, data, evaluator, license, and reproducibility provenance."
+license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   category: machine-learning
 ---
 

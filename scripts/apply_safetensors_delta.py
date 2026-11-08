@@ -7,6 +7,8 @@ import argparse
 import hashlib
 import json
 import math
+import os
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -67,10 +69,15 @@ def main() -> int:
     except ImportError as error:
         parser.error(f"install optional dependencies with `python -m pip install torch safetensors`: {error}")
 
-    metadata = None
-    with safe_open(str(source), framework="pt", device="cpu") as handle:
-        metadata = handle.metadata()
-    tensors = load_file(str(source), device="cpu")
+    try:
+        source_hash = sha256(source)
+        with safe_open(str(source), framework="pt", device="cpu") as handle:
+            metadata = handle.metadata()
+        tensors = load_file(str(source), device="cpu")
+        if sha256(source) != source_hash:
+            parser.error("source checkpoint changed while it was being read")
+    except Exception as error:
+        parser.error(f"could not read Safetensors source: {error}")
     if args.tensor not in tensors:
         parser.error(f"tensor key not found: {args.tensor}")
 
@@ -97,9 +104,49 @@ def main() -> int:
         parser.error("resulting scalar would be non-finite")
     tensors[args.tensor][coordinate] = new_value
 
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    source_hash = sha256(source)
-    save_file(tensors, str(destination), metadata=metadata)
+    try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        parser.error(f"could not create destination directory: {error}")
+    temporary_paths: list[Path] = []
+    reserved_paths: list[Path] = []
+    try:
+        def temporary_path(suffix: str) -> Path:
+            descriptor, name = tempfile.mkstemp(
+                prefix=f".{destination.name}.", suffix=suffix, dir=destination.parent
+            )
+            os.close(descriptor)
+            path = Path(name)
+            temporary_paths.append(path)
+            return path
+
+        candidate_temp = temporary_path(".safetensors.tmp")
+        receipt_temp = temporary_path(".edit.json.tmp")
+        save_file(tensors, str(candidate_temp), metadata=metadata)
+        with safe_open(str(candidate_temp), framework="pt", device="cpu") as handle:
+            saved_value = float(handle.get_tensor(args.tensor)[coordinate].item())
+        expected_value = float(tensors[args.tensor][coordinate].item())
+        if saved_value != expected_value:
+            raise OSError("saved checkpoint did not preserve the edited scalar")
+
+        for output_path in (destination, receipt_path):
+            descriptor = os.open(output_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            os.close(descriptor)
+            reserved_paths.append(output_path)
+    except FileExistsError:
+        for path in temporary_paths:
+            path.unlink(missing_ok=True)
+        for path in reserved_paths:
+            path.unlink(missing_ok=True)
+        parser.error("destination or receipt already exists; choose a new path")
+    except Exception as error:
+        for path in temporary_paths:
+            path.unlink(missing_ok=True)
+        for path in reserved_paths:
+            path.unlink(missing_ok=True)
+        parser.error(f"could not prepare checkpoint output: {error}")
+
+    candidate_hash = sha256(candidate_temp)
     receipt = {
         "schema_version": "1.0",
         "method": "direct_scalar_delta",
@@ -107,18 +154,29 @@ def main() -> int:
         "source_path": str(source),
         "source_sha256": source_hash,
         "candidate_path": str(destination),
-        "candidate_sha256": sha256(destination),
+        "candidate_sha256": candidate_hash,
         "tensor": args.tensor,
         "index": list(coordinate),
         "before": old_value,
         "delta": args.delta,
-        "after": float(tensors[args.tensor][coordinate].item()),
+        "after": expected_value,
         "max_abs_delta": args.max_abs_delta,
         "tensor_shape": list(tensor.shape),
         "dtype": str(tensor.dtype),
         "note": "This receipt records a parameter edit; it does not establish model improvement.",
     }
-    receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    try:
+        receipt_temp.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        os.replace(candidate_temp, destination)
+        os.replace(receipt_temp, receipt_path)
+    except Exception as error:
+        for path in temporary_paths:
+            path.unlink(missing_ok=True)
+        for path in reserved_paths:
+            path.unlink(missing_ok=True)
+        parser.error(f"could not write candidate and edit receipt: {error}")
+    for path in temporary_paths:
+        path.unlink(missing_ok=True)
     print(json.dumps(receipt, indent=2))
     return 0
 

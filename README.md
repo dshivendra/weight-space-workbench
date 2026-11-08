@@ -1,101 +1,155 @@
 # Weight Space Workbench
 
-Portable Agent Skills and small utilities for controlled, auditable weight-space experiments.
+**A reproducible `edit → evaluate → compare → keep or revert` workflow for neural-network weights.**
 
-This project helps an agent and researcher move from a model-behavior goal to a reproducible weight edit, evaluation, and keep-or-revert decision. It is inspired by role-based engineering workflows such as gstack, but the skills and utilities here are original and focused on model weight experiments.
+[![Quality checks](https://github.com/dshivendra/weight-space-workbench/actions/workflows/quality.yml/badge.svg)](https://github.com/dshivendra/weight-space-workbench/actions/workflows/quality.yml)
+[![MIT License](https://img.shields.io/github/license/dshivendra/weight-space-workbench)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/dshivendra/weight-space-workbench?style=flat)](https://github.com/dshivendra/weight-space-workbench/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/dshivendra/weight-space-workbench?style=flat)](https://github.com/dshivendra/weight-space-workbench/forks)
+![README views](https://visitor-badge.laobi.icu/badge?page_id=dshivendra.weight-space-workbench&left_text=README%20views)
 
-> **Research tooling, not an optimizer or safety certification.** A metric improvement on a benchmark does not establish general improvement or safe physical behavior. Run robotics policies in simulation first; use human-supervised, bounded tests before any hardware deployment.
+Weight Space Workbench gives researchers and coding agents a small, auditable process for changing a model checkpoint. It records the goal, baseline, edit hypothesis, bounded change, paired evaluation, guardrails, and final decision. It is a set of portable [Agent Skills](https://agentskills.io/) plus a few narrow Python tools—not an automatic optimizer or a universal model evaluator.
 
-## Workflow
+> **Research tooling, not a safety certification.** Offline metric gains do not establish general improvement or physical safety. For robot policies, evaluate in simulation first and use bounded, human-supervised hardware tests only after the required reviews.
 
-```text
-Define goal → Pin model/data/evaluation → Measure baseline → Diagnose failure
-           → State weight-edit hypothesis → Edit a copy → Integrity checks
-           → Evaluate same + held-out data → Compare guardrails → Keep or revert
+## The loop
+
+```mermaid
+flowchart LR
+    A[Define goal] --> B[Pin baseline]
+    B --> C[Inspect failure]
+    C --> D[Hypothesize and edit]
+    D --> E[Evaluate paired and held-out]
+    E --> F{Guardrails and uncertainty pass?}
+    F -->|Yes| G[Keep derivative]
+    F -->|No or unknown| H[Revert or investigate]
 ```
 
-The skills follow the [Agent Skills specification](https://agentskills.io/specification): each skill is a directory with a `SKILL.md` containing YAML frontmatter and task instructions. Install only the skills you want into a compatible agent's skill directory.
+No baseline means no edit. If a tensor cannot be connected to the observed failure with evidence, the correct result is `no-edit`. A primary metric gain cannot compensate for a failed guardrail, and an unmeasured uncertainty result stays inconclusive.
 
-## Included skills
+## Skills
 
-| Skill | Responsibility |
-|---|---|
-| `wsp-loop` | Orchestrate the full experiment and enforce evidence at every transition. |
-| `wsp-define-goal` | Turn a vague request into a measurable behavior contract and guardrails. |
-| `wsp-baseline` | Pin the model, data, preprocessing, evaluator, and baseline metrics. |
-| `wsp-inspect` | Inspect architecture and weights without overclaiming what weights reveal. |
-| `wsp-edit` | Propose and apply a bounded edit to a copy of a Safetensors checkpoint. |
-| `wsp-evaluate` | Run controlled same-set and holdout evaluation with relevant safety metrics. |
-| `wsp-decide` | Apply preregistered acceptance rules; keep, revert, or run a new hypothesis. |
-| `wsp-release` | Package provenance and publish a validated derivative without overwriting upstream. |
+Each skill has one job, a clear activation description, an operational procedure, and a defined handoff. The full workflow is in `wsp-loop`.
 
-## Quick start
+| Skill | Use it to | Handoff |
+|---|---|---|
+| `wsp-define-goal` | Turn a requested behavior change into a measurable contract | `goal.json` or run-record task section |
+| `wsp-baseline` | Pin the model, data, preprocessing, evaluator, and pre-edit metrics | Baseline report and hashes |
+| `wsp-inspect` | Diagnose a measured failure and test whether an edit is justified | Falsifiable hypothesis or `no-edit` |
+| `wsp-edit` | Apply a bounded, reversible change to a checkpoint copy | Candidate checkpoint and edit receipt |
+| `wsp-evaluate` | Compare baseline and candidate under the same protocol | Paired metrics, holdout metrics, guardrails |
+| `wsp-decide` | Apply rules written before evaluation | `keep`, `revert`, or `inconclusive` |
+| `wsp-release` | Package a kept derivative with provenance and license checks | Versioned, documented derivative |
+| `wsp-loop` | Coordinate the full sequence and preserve evidence between stages | Complete run record |
 
-### 1. Install the skill pack
+## Get started
 
-Clone this repository, then copy `.agents/skills/` into the skills directory used by your agent. For Codex CLI, Claude Code, and other compatible clients, use the skill installation method documented by that client. Each skill is independently usable; start with `wsp-loop` for the end-to-end workflow.
+### Use the skills
 
-If your client scans an arbitrary skill directory, the helper can copy the pack there without overwriting existing folders:
+Clone the repository, then install the skills into a directory your agent scans. The installer never overwrites an existing skill folder:
 
 ```bash
-python scripts/install_skills.py --destination /path/to/agent/skills
+git clone https://github.com/dshivendra/weight-space-workbench.git
+cd weight-space-workbench
+python3 scripts/install_skills.py --destination ~/.agents/skills
 ```
 
-### 2. Try the offline example
+For Claude Code, use `~/.claude/skills`; for other clients, follow that client's current skill-discovery instructions. If the repository is already in a client-supported project skill location, you can use the skills there without copying them.
 
-The synthetic example needs Python and NumPy only. It changes one coefficient in a tiny vision/text-to-action policy, evaluates on fixed examples, and prints a before/after report:
+### Run the transparent toy example
+
+Requires Python 3.10 or later and NumPy:
 
 ```bash
-python examples/synthetic_loop/run.py
+python3 -m pip install -r requirements-example.txt
+python3 examples/synthetic_loop/run.py
 ```
 
-This example is intentionally transparent and is **not** evidence that an LLM can infer useful edits in a pretrained model.
+The example changes one coefficient in a synthetic linear image-and-instruction-to-action policy. Its target equation is known in advance; this demonstrates measurement and reporting only. It is **not** evidence that an agent can discover useful edits to a pretrained model.
 
-### 3. Apply a one-scalar edit to a Safetensors copy
+### Edit one Safetensors scalar
 
-Install the optional dependency and edit into a new destination (the utility refuses to overwrite an existing path):
+The editor requires PyTorch and Safetensors and supports **one unsharded `.safetensors` file**. It refuses to overwrite the source, candidate, or receipt. The example below is a mechanics demo, not a recommendation to change an arbitrary model parameter:
 
 ```bash
-python -m pip install safetensors torch
-python scripts/apply_safetensors_delta.py \
+python3 -m pip install -r requirements-safetensors.txt
+python3 scripts/apply_safetensors_delta.py \
   --source model.safetensors \
   --destination artifacts/candidate/model.safetensors \
   --tensor 'policy.action_head.weight' \
   --index 0,3 \
   --delta -0.001 \
-  --max-abs-delta 0.01
+  --max-abs-delta 0.01 \
+  --expect-value 0.125
 ```
 
-This utility changes exactly one scalar and writes an edit receipt next to the destination. It does not infer tensor semantics, guarantee the checkpoint remains behaviorally sound, or evaluate the model. Run the model-specific loader and evaluator after editing.
+The script emits a JSON receipt with source and candidate hashes, tensor coordinate, before/after values, and bounds. It does not infer tensor meaning, prove the rest of a model is compatible, or evaluate model behavior.
 
-## Structural validation
+### Compare preregistered metrics
+
+`scripts/compare_metrics.py` accepts two JSON objects containing numeric metrics. Guard limits and improvement thresholds must be chosen before looking at candidate results.
 
 ```bash
-python scripts/validate_skill_pack.py
+python3 scripts/compare_metrics.py \
+  --baseline baseline.json \
+  --candidate candidate.json \
+  --primary task_loss \
+  --direction lower \
+  --min-relative-improvement 0.01 \
+  --guard 'invalid_actions<=0' \
+  --uncertainty-status passed \
+  --uncertainty-method paired-bootstrap-95-percent-CI
 ```
 
-See [docs/WORKFLOW.md](docs/WORKFLOW.md) for stage contracts and [docs/SUPPORTED_FORMATS.md](docs/SUPPORTED_FORMATS.md) for framework limitations.
+The script does not calculate uncertainty. `--uncertainty-status passed` is a caller-provided assertion; use it only after running the preregistered paired uncertainty analysis. Without that evidence, the result remains `inconclusive`. Exit codes are `0` for keep, `1` for revert, and `2` for inconclusive.
 
-## Evaluation discipline
+## What it supports
 
-- Pin an immutable upstream revision and record hashes for model, data, and evaluation code.
-- Decide the primary metric, minimum gain, regression metrics, and stopping rule before editing.
-- Keep model preprocessing and evaluation settings fixed between baseline and candidate.
-- Use paired examples plus a fresh held-out split; report sample counts and uncertainty where possible.
-- For robotics, include task success, action error, constraint violations, and rollout failures. Do not infer real-world safety from offline action loss alone.
-- Save every attempted edit. Revert if the target gain is absent, guardrails fail, or the result does not repeat.
-- Do not upload private weights, sensitive data, or checkpoints whose license does not permit redistribution.
+- **Included:** a single floating-point scalar edit in a single Safetensors file, a metric comparison utility, a non-overwriting skill installer, and an offline synthetic demo.
+- **Not included:** a universal model loader/evaluator, automatic tensor selection, optimizer-based fine-tuning, sharded checkpoint editing, quantized or packed weight editing, or a supported Octo/JAX/Flax checkpoint adapter.
 
-## Repository layout
+Octo's published checkpoint format is not handled by the Safetensors utility. A framework-specific adapter and a model-specific evaluator are required before applying this workflow to Octo or another unsupported format. See [supported formats](docs/SUPPORTED_FORMATS.md).
+
+## Quality checks
+
+Install the development dependencies and run the same checks used in GitHub Actions:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+python3 scripts/validate_skill_pack.py
+python3 -m unittest discover -s tests -v
+python3 examples/synthetic_loop/run.py
+python3 -m pip install 'git+https://github.com/agentskills/agentskills.git@83021e2be457a9b6679148719c1f6074f0ad975e#subdirectory=skills-ref'
+for skill in .agents/skills/*; do skills-ref validate "$skill"; done
+```
+
+The repository has a format validator and behavior tests for the bundled utilities. Skill behavior still needs to be exercised with scenario prompts in each target agent; static validation cannot prove that an agent activates or follows a skill. See [skill authoring and review](docs/SKILL_AUTHORING.md) and the [workflow contract](docs/WORKFLOW.md).
+
+## Repository visibility
+
+The README views badge is provided by [Visitor Badge](https://visitor-badge.laobi.icu/). It counts badge requests and may be affected by caching; it is not a unique-person count or GitHub's official traffic metric. Repository owners can see GitHub's own views and clones under [Insights → Traffic](https://github.com/dshivendra/weight-space-workbench/graphs/traffic).
+
+## Safety and reproducibility
+
+- Pin immutable model, dataset, preprocessing, evaluator, and code revisions; record SHA-256 hashes.
+- Freeze the evaluation protocol and acceptance rules before editing.
+- Keep evaluation examples paired; freeze a separate holdout set and do not tune against it.
+- Report sample counts, per-slice metrics, uncertainty, runtime, and failures.
+- Keep rejected edit receipts. Revert when the preregistered target misses or any guardrail fails.
+- Never commit model checkpoints, private data, credentials, or artifacts whose license forbids redistribution.
+- Publish a kept checkpoint only as a separately named derivative, never by overwriting upstream weights.
+
+## Project files
 
 ```text
-.agents/skills/     Portable Agent Skills
-docs/               Workflow and design notes
-examples/           Fully transparent synthetic demonstration
-scripts/            Narrow, auditable utilities
-templates/          Run-record and edit-manifest templates
+.agents/skills/   Portable Agent Skills
+docs/             Workflow, formats, and authoring guidance
+examples/         Synthetic, fully transparent demonstration
+scripts/          Bounded utilities and validation
+templates/        Run record and edit hypothesis
+tests/            Utility and format checks
 ```
 
 ## License and attribution
 
-Project code and original skill content are MIT licensed. Agent Skills is an open format; this repository is an independent implementation and is not affiliated with Anthropic, OpenAI, Hugging Face, Garry Tan, or gstack. See [LICENSE](LICENSE).
+Project code and original skill content are MIT licensed. Agent Skills is an open format. This project is an independent implementation and is not affiliated with Anthropic, OpenAI, Hugging Face, Garry Tan, gstack, or the referenced skill projects. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md) for applicable notices.

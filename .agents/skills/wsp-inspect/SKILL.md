@@ -1,8 +1,9 @@
 ---
 name: wsp-inspect
-description: "Inspect model architecture, parameter metadata, and failure examples to form a cautious, testable hypothesis for a neural-network weight edit. Use after baseline measurement and before selecting tensors to edit."
+description: "Use after baseline measurement and before selecting tensors. Inspect architecture, parameter metadata, and failure examples to form a cautious, testable weight-edit hypothesis—or conclude that no edit is justified."
+license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   category: machine-learning
 ---
 
@@ -27,4 +28,6 @@ Use executable analysis for tensor statistics and model probes. Do not dump enti
 - Select edits using held-out evaluation examples.
 - Claim a model was understood merely because a dataset or behavior was guessed correctly.
 
-Save the result in `templates/edit-hypothesis.md`.
+## Output
+
+Fill `templates/edit-hypothesis.md` with observations, interpretation, alternative explanations, tensor and coordinate scope, expected metric change, bounds, and a disconfirming result. If the evidence does not justify a causal hypothesis, report `no-edit` and stop before the editor.

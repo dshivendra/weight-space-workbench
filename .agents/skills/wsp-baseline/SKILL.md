@@ -1,8 +1,9 @@
 ---
 name: wsp-baseline
-description: "Establish a reproducible baseline for a neural-network weight experiment by pinning the model, checkpoint, data, preprocessing, evaluator, seeds, and metrics before any weight changes. Use before proposing or applying an edit."
+description: "Use before proposing or applying a neural-network weight edit. Pin the model, checkpoint, data, preprocessing, evaluator, seeds, and metrics, then record the reproducible baseline."
+license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   category: machine-learning
 ---
 
@@ -24,4 +25,6 @@ metadata:
 - Per-example outputs or a secure reference to them
 - Primary and regression metrics with uncertainty
 
-Output `baseline.json` or fill the `evaluation.baseline_metrics` section in `templates/run-record.json`. Do not edit, fine-tune, merge, quantize, or convert the baseline checkpoint in place.
+## Output
+
+Write `baseline.json` with the run record's evaluation fields, or fill `evaluation.baseline_metrics` in `templates/run-record.json`. Include the hashes and exact evaluation configuration needed to reproduce the result. Do not edit, fine-tune, merge, quantize, or convert the baseline checkpoint in place.
