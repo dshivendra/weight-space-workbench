@@ -29,7 +29,7 @@ No baseline means no edit. If a tensor cannot be connected to the observed failu
 
 ## Skills
 
-Each skill has one job, a clear activation description, an operational procedure, and a defined handoff. Skill folders bundle the supporting references, scripts, assets, and scenario evals their task needs; the installer copies these with `SKILL.md`. The full workflow is in `wsp-loop`.
+Each skill has one job, a clear activation description, an operational procedure, and a defined handoff. Skill folders bundle the supporting references, scripts, assets, and scenario evals their task needs; the installer copies these with `SKILL.md`. The full workflow is in `wsp-loop`; prompt routing and when to add a skill are specified in [skill routing](docs/SKILL_ROUTING.md). The detailed implementation comparison and remaining gaps are in [skill system patterns](docs/SKILL_SYSTEM_PATTERNS.md).
 
 Open a skill's `SKILL.md` first. It links the supporting files to load only when relevant. For example, `wsp-inspect` has a metadata-only Safetensors inspector and a hypothesis evidence guide; `wsp-edit` bundles the bounded editor; and `wsp-loop` bundles a run-record check. Each skill also has `evals/evals.json` with scenario prompts and observable assertions. These cases are fixtures for target-agent evaluation, not results that have already passed.
 
@@ -125,7 +125,7 @@ python3 -m pip install 'git+https://github.com/agentskills/agentskills.git@83021
 for skill in .agents/skills/*; do skills-ref validate "$skill"; done
 ```
 
-The repository validator checks frontmatter, skill-local resource paths, and the schema shape of each `evals/evals.json`. It does not grade model-generated skill behavior. Run each scenario with and without the skill in clean sessions, save outputs and assertion evidence, review execution traces, then revise and rerun. Do not claim a behavior eval passed based on static validation alone. See [skill authoring and review](docs/SKILL_AUTHORING.md) and the [workflow contract](docs/WORKFLOW.md).
+The repository validator checks frontmatter, skill-local resource paths, and the schema shape of each `evals/evals.json`. It does not grade model-generated skill behavior. Run each scenario with and without the skill in clean sessions, save outputs and assertion evidence, review execution traces, then revise and rerun. Do not claim a behavior eval passed based on static validation alone. See [skill authoring and review](docs/SKILL_AUTHORING.md), [skill routing](docs/SKILL_ROUTING.md), [system pattern review](docs/SKILL_SYSTEM_PATTERNS.md), and the [workflow contract](docs/WORKFLOW.md).
 
 ## Repository visibility
 
