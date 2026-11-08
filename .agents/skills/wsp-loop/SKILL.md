@@ -4,7 +4,7 @@ description: "Use when a user asks to inspect, directly edit, improve, or compar
 license: MIT
 compatibility: Requires access to model artifacts and a model-specific evaluator for empirical claims. Included editing utility supports single-file Safetensors checkpoints only.
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   category: machine-learning
 ---
 
@@ -26,7 +26,7 @@ At every handoff, check that the predecessor artifact exists and that its hashes
 
 ## Evidence handoff
 
-Use `templates/run-record.json` for the canonical run record and `templates/edit-hypothesis.md` for the hypothesis. Each stage must either produce its output or record why it could not. Keep raw outputs and checkpoint hashes alongside the run record.
+Use bundled `assets/run-record.json` for the canonical run record and `assets/edit-hypothesis.md` for the hypothesis. Each stage must either produce its output or record why it could not. Keep raw outputs and checkpoint hashes alongside the run record.
 
 ## Stop conditions
 
@@ -39,4 +39,11 @@ Use `templates/run-record.json` for the canonical run record and `templates/edit
 
 ## Completion output
 
-Report the model and immutable revision, baseline/candidate hashes, edit receipt, paired and holdout metrics, uncertainty method, every guardrail result, final decision, and any stages not run. Say `inconclusive` when required evidence is missing.
+Report the model and immutable revision, baseline/candidate hashes, edit receipt, paired and holdout metrics, uncertainty method, every guardrail result, final decision, and any stages not run. Run `scripts/validate_run_record.py` on the final JSON before calling the loop complete. Say `inconclusive` when required evidence is missing.
+
+## Supporting files
+
+- Run `python3 scripts/validate_run_record.py RUN_RECORD.json` from the skill directory before declaring the loop complete. A `keep` decision also requires candidate metrics and an uncertainty method.
+- Use `assets/run-record.json` and `assets/edit-hypothesis.md` when the repository-level templates are not available.
+- Read `references/stage-handoffs.md` when a required artifact is missing or a stage needs to stop safely.
+- Review `evals/evals.json` for skip-baseline, weak-hypothesis, and holdout-leakage pressure cases.

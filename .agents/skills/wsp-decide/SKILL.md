@@ -3,7 +3,7 @@ name: wsp-decide
 description: "Use after candidate evaluation to decide whether a neural-network weight edit is keepable, must be reverted, or is inconclusive under preregistered metrics, guardrails, uncertainty, and reproducibility rules."
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   category: machine-learning
 ---
 
@@ -27,4 +27,10 @@ Apply the experiment contract exactly as written before evaluation.
 
 ## Output
 
-Write exactly one outcome—`keep`, `revert`, or `inconclusive`—with the rationale, metric evidence, guardrail results, uncertainty method, and next action in the run record. A point-estimate-only comparison is never enough for `keep`.
+Write exactly one outcome—`keep`, `revert`, or `inconclusive`—with the rationale, metric evidence, guardrail results, uncertainty method, and next action using `assets/decision-report.json`. If the full repository is checked out, also update the matching decision fields in its run record. A point-estimate-only comparison is never enough for `keep`.
+
+## Supporting files
+
+- Run `python3 scripts/compare_metrics.py --help` for the machine-readable threshold check. It accepts only caller-provided uncertainty status; it does not calculate confidence intervals.
+- Read `references/decision-rules.md` when resolving ties, missing evidence, or guardrail failures.
+- Review `evals/evals.json` for uncertainty, guardrail, and threshold-change cases.

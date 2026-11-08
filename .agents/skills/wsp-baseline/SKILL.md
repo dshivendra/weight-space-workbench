@@ -3,7 +3,7 @@ name: wsp-baseline
 description: "Use before proposing or applying a neural-network weight edit. Pin the model, checkpoint, data, preprocessing, evaluator, seeds, and metrics, then record the reproducible baseline."
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   category: machine-learning
 ---
 
@@ -27,4 +27,11 @@ metadata:
 
 ## Output
 
-Write `baseline.json` with the run record's evaluation fields, or fill `evaluation.baseline_metrics` in `templates/run-record.json`. Include the hashes and exact evaluation configuration needed to reproduce the result. Do not edit, fine-tune, merge, quantize, or convert the baseline checkpoint in place.
+Write `baseline.json` using `assets/baseline-record.json`. If the full repository is checked out, also fill `evaluation.baseline_metrics` in `templates/run-record.json`. Include the hashes and exact evaluation configuration needed to reproduce the result. Do not edit, fine-tune, merge, quantize, or convert the baseline checkpoint in place.
+
+## Supporting files
+
+- Run `python3 scripts/hash_artifacts.py MODEL_PATH DATA_PATH EVALUATOR_PATH` to create a deterministic SHA-256 inventory. Save stdout as the baseline artifact manifest.
+- Use `assets/baseline-record.json` to capture the baseline identity, environment, seeds, and metrics.
+- Read `references/reproducibility.md` when recording preprocessing, runtime, seed, and repeated-run details.
+- Review `evals/evals.json` for missing-evaluator and incomplete-baseline cases.

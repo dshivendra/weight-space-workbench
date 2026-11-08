@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "goal": "",
+  "model": {"repo_id": "", "revision": "unknown", "checkpoint_sha256": "unknown", "license": "unknown"},
+  "context": {"mode": "offline", "environment": ""},
+  "primary_metric": {"name": "", "direction": "lower", "minimum_improvement": null, "uncertainty_method": ""},
+  "guardrails": [],
+  "data": {"dataset_id": "", "revision": "unknown", "split": "", "preprocessing": "", "seed_policy": ""},
+  "stop_conditions": [],
+  "rollback_condition": ""
+}

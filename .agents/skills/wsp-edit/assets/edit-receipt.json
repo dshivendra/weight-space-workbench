@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "method": "direct_scalar_delta",
+  "created_at_utc": "2026-01-01T00:00:00+00:00",
+  "source_path": "source.safetensors",
+  "source_sha256": "<64-hex-sha256>",
+  "candidate_path": "candidate.safetensors",
+  "candidate_sha256": "<64-hex-sha256>",
+  "tensor": "module.weight",
+  "index": [0, 0],
+  "before": 0.125,
+  "delta": -0.001,
+  "after": 0.124,
+  "max_abs_delta": 0.01,
+  "tensor_shape": [1, 1],
+  "dtype": "torch.float32",
+  "note": "This receipt records a parameter edit; it does not establish model improvement."
+}

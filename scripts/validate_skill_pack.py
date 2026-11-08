@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -22,6 +24,7 @@ MAX_NAME_LENGTH = 64
 MAX_DESCRIPTION_LENGTH = 1024
 MAX_COMPATIBILITY_LENGTH = 500
 RECOMMENDED_MAX_LINES = 500
+RESOURCE_PATH = re.compile(r"(?<![\w.-])(?:scripts|references|assets|evals)/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*")
 
 
 def parse_frontmatter(text: str) -> tuple[dict[str, object], str]:
@@ -112,6 +115,69 @@ def validate_skill(skill_dir: Path) -> list[str]:
     return errors
 
 
+def validate_supporting_files(skill_dir: Path) -> list[str]:
+    """Validate local progressive-disclosure resources and scenario eval cases."""
+    errors: list[str] = []
+    skill_file = skill_dir / "SKILL.md"
+    try:
+        text = skill_file.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        return [f"{skill_file}: cannot read supporting-file references: {error}"]
+
+    for relative in sorted(set(RESOURCE_PATH.findall(text))):
+        target = skill_dir / relative
+        if not target.is_file():
+            errors.append(f"{skill_file}: referenced supporting file does not exist: {relative}")
+
+    eval_file = skill_dir / "evals" / "evals.json"
+    if not eval_file.is_file():
+        return errors + [f"{eval_file}: every project skill must include scenario eval cases"]
+    try:
+        suite = json.loads(eval_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        return errors + [f"{eval_file}: invalid JSON: {error}"]
+    if not isinstance(suite, dict) or suite.get("skill_name") != skill_dir.name:
+        errors.append(f"{eval_file}: skill_name must match `{skill_dir.name}`")
+    cases = suite.get("evals") if isinstance(suite, dict) else None
+    if not isinstance(cases, list) or not cases:
+        errors.append(f"{eval_file}: evals must be a non-empty array")
+    else:
+        seen_ids: set[str] = set()
+        for index, case in enumerate(cases):
+            prefix = f"{eval_file}: evals[{index}]"
+            if not isinstance(case, dict):
+                errors.append(f"{prefix} must be an object")
+                continue
+            case_id = case.get("id")
+            if not isinstance(case_id, (str, int)) or not str(case_id).strip():
+                errors.append(f"{prefix}.id must be a non-empty string or integer")
+            elif str(case_id) in seen_ids:
+                errors.append(f"{prefix}.id must be unique")
+            else:
+                seen_ids.add(str(case_id))
+            for field in ("prompt", "expected_output"):
+                if not isinstance(case.get(field), str) or not case[field].strip():
+                    errors.append(f"{prefix}.{field} must be a non-empty string")
+            assertions = case.get("assertions")
+            if not isinstance(assertions, list) or not assertions or any(not isinstance(item, str) or not item.strip() for item in assertions):
+                errors.append(f"{prefix}.assertions must be a non-empty array of strings")
+            files = case.get("files", [])
+            if not isinstance(files, list) or any(not isinstance(item, str) or not item.strip() for item in files):
+                errors.append(f"{prefix}.files must be an array of relative file paths")
+            else:
+                for relative in files:
+                    target = (skill_dir / relative).resolve()
+                    if skill_dir.resolve() not in target.parents or not target.is_file():
+                        errors.append(f"{prefix}.files references a missing or external file: {relative}")
+    for folder in ("assets", "evals"):
+        for json_file in (skill_dir / folder).glob("*.json"):
+            try:
+                json.loads(json_file.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as error:
+                errors.append(f"{json_file}: invalid JSON: {error}")
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -131,7 +197,11 @@ def main() -> int:
         print(f"no skill folders found in {root}", file=sys.stderr)
         return 1
 
-    errors = [error for skill_dir in skill_dirs for error in validate_skill(skill_dir)]
+    errors = [
+        error
+        for skill_dir in skill_dirs
+        for error in (*validate_skill(skill_dir), *validate_supporting_files(skill_dir))
+    ]
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
