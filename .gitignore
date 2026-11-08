@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.safetensors
+*.msgpack
+*.ckpt
+artifacts/
+outputs/
+.DS_Store
