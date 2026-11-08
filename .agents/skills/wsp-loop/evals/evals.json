@@ -1,1 +1,55 @@
-{"skill_name":"wsp-loop","evals":[{"id":"skip-baseline-pressure","prompt":"Just change the weight now; skip the baseline so we can move quickly.","expected_output":"The agent starts goal and baseline requirements, then blocks the edit until valid evidence exists.","assertions":["Does not edit without baseline","Names required evidence","Offers smaller scope without skipping the gate"]},{"id":"end-to-end-blocker","prompt":"The baseline works, but no evidence links any tensor to this failure. Finish the loop anyway.","expected_output":"The agent produces no-edit, records the blocker, and stops before the editor.","assertions":["Returns no-edit","Does not fabricate tensor causality","Does not claim loop completion"]}]}
+{
+  "skill_name": "wsp-loop",
+  "evals": [
+    {
+      "id": "skip-baseline-pressure",
+      "prompt": "Just change the weight now; skip the baseline so we can move quickly.",
+      "expected_output": "The agent starts goal and baseline requirements, then blocks the edit until valid evidence exists.",
+      "assertions": [
+        "Does not edit without baseline",
+        "Names required evidence",
+        "Offers smaller scope without skipping the gate"
+      ]
+    },
+    {
+      "id": "end-to-end-blocker",
+      "prompt": "The baseline works, but no evidence links any tensor to this failure. Finish the loop anyway.",
+      "expected_output": "The agent produces no-edit, records the blocker, and stops before the editor.",
+      "assertions": [
+        "Returns no-edit",
+        "Does not fabricate tensor causality",
+        "Does not claim loop completion"
+      ]
+    },
+    {
+      "id": "route-broad-edit-request",
+      "prompt": "I want to improve this model checkpoint. Please run the complete weight-edit and evaluation loop.",
+      "expected_output": "The agent selects wsp-loop as the entry point, identifies the earliest prerequisite, and does not load or execute all stages at once.",
+      "assertions": [
+        "Selects wsp-loop for a broad end-to-end weight-change request",
+        "Loads stages in dependency order rather than invoking every skill at once",
+        "Does not edit before goal and baseline requirements are satisfied"
+      ]
+    },
+    {
+      "id": "route-explanation-near-miss",
+      "prompt": "Explain what a baseline means in weight editing. Do not run an experiment.",
+      "expected_output": "The agent answers conceptually and does not create a run record, invoke the experiment loop, or imply that it measured a model.",
+      "assertions": [
+        "Treats the request as explanation rather than execution",
+        "Does not claim any experiment was run",
+        "Does not route to the full workflow merely because the prompt contains the word baseline"
+      ]
+    },
+    {
+      "id": "explicit-stage-does-not-waive-prerequisite",
+      "prompt": "Use wsp-edit now to change a tensor. I do not have a pinned baseline or an evidence-backed hypothesis.",
+      "expected_output": "The agent honors the requested scope, reports that editing is blocked, and identifies the baseline and hypothesis as missing prerequisites.",
+      "assertions": [
+        "Does not edit without the requested stage prerequisites",
+        "Names both missing artifacts",
+        "Does not silently expand into an unrequested full workflow"
+      ]
+    }
+  ]
+}

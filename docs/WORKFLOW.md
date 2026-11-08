@@ -1,18 +1,20 @@
 # Experiment workflow
 
+For prompt-to-skill selection, explicit stage scope, and rules for adding a new skill route, see [skill routing](SKILL_ROUTING.md) and the bundled [`wsp-loop` routing reference](../.agents/skills/wsp-loop/references/routing.md). The reference analysis of Stageshow, Superpowers, gstack, and Matt Pocock’s grilling skills is in [skill system patterns](SKILL_SYSTEM_PATTERNS.md).
+
 ## Roles in the loop
 
 The skill pack divides the work into focused responsibilities. `wsp-loop` owns sequencing and evidence transfer; the other skills do not silently skip predecessor artifacts.
 
-| Stage | Required input | Output |
-|---|---|---|
-| Define | User goal and deployment context | `goal.json` with target metric, guardrails, and stop rule |
-| Baseline | Pinned model and evaluator | Baseline report and artifact hashes |
-| Inspect | Baseline failure slices and model structure | Evidence-backed edit hypothesis or `no-edit` conclusion |
-| Edit | Approved hypothesis and immutable source | Candidate checkpoint and edit receipt |
-| Evaluate | Baseline, candidate, fixed test protocol | Paired metrics, holdout metrics, safety metrics |
-| Decide | Preregistered acceptance rules and uncertainty evidence | `keep`, `revert`, or `inconclusive` decision |
-| Release | Kept candidate and complete evidence | Versioned derivative, model card, and provenance |
+| Stage | Required input | Output | Gate / validation |
+|---|---|---|---|
+| Define | User goal and deployment context | `goal.json` with target metric, guardrails, and stop rule | Run `wsp-define-goal/scripts/validate_goal_contract.py`; unresolved material decisions block baseline work. |
+| Baseline | Pinned model and evaluator | Baseline report and artifact hashes | Hash artifacts with `wsp-baseline/scripts/hash_artifacts.py`; evaluator/load failures are blockers, never scores. |
+| Inspect | Baseline failure slices and model structure | Evidence-backed edit hypothesis or `no-edit` conclusion | Human-review causal evidence and falsifiability; missing connection means `no-edit`. |
+| Edit | Approved hypothesis and immutable source | Candidate checkpoint and edit receipt | Editor enforces source hash, bounds, no-overwrite, and receipt; model-specific reload/smoke check still required. |
+| Evaluate | Baseline, candidate, fixed test protocol | Paired metrics, holdout metrics, safety metrics | Run `wsp-evaluate/scripts/paired_bootstrap.py` on aligned IDs where applicable; inspect guardrails and protocol parity. |
+| Decide | Preregistered acceptance rules and uncertainty evidence | `keep`, `revert`, or `inconclusive` decision | Run `wsp-decide/scripts/compare_metrics.py`; keep requires prior thresholds, guardrails, holdout, and uncertainty evidence. |
+| Release | Kept candidate and complete evidence | Versioned derivative, model card, and provenance | Run `wsp-release/scripts/verify_release_bundle.py`; user request, license/provenance review, and derivative-only identity are required. |
 
 ## Decision protocol
 

@@ -31,8 +31,9 @@ Supporting files are optional in the format; include only files that materially 
 8. **Make skills installable on their own.** Resolve supporting file paths from the skill directory. Do not depend on repository-root files after installation unless the skill explicitly requires the full repository.
 9. **Use one strong example.** Prefer a complete example that demonstrates the decision over many generic examples or a blank template without guidance.
 10. **Keep scenario evals with the skill.** Add realistic prompts, expected outcomes, and observable assertions in `evals/evals.json`; cover missing inputs and pressure to bypass a safety gate. Static checks verify file and schema shape, but a target agent must execute and grade the cases.
+11. **Maintain the route.** When adding or changing a skill, update the route matrix, README inventory, positive and near-miss activation scenarios, and prerequisite handoff together. Do not add undocumented host-specific routing fields to portable frontmatter.
 
-Stageshow demonstrates a useful authoring pattern: one clear thesis, concrete failure modes, and a workflow that makes quality decisions explicit. Superpowers adds scenario-based pressure testing for procedural skills. gstack shows how explicit inputs, outputs, gates, and routing fit into a larger skill system. Apply these patterns proportionally; this repository does not need host-specific hooks to benefit from focused skills and explicit handoffs.
+Stageshow demonstrates a useful authoring pattern: one clear thesis, concrete failure modes, and a workflow that makes quality decisions explicit. Superpowers adds scenario-based pressure testing for procedural skills. gstack shows how explicit inputs, outputs, gates, and routing fit into a larger skill system. Apply these patterns proportionally; this repository does not need host-specific hooks to benefit from focused skills and explicit handoffs. See [skill routing](SKILL_ROUTING.md) and the [detailed system-pattern review](SKILL_SYSTEM_PATTERNS.md) for the concrete project policy and remaining gaps.
 
 ## Review scenarios
 

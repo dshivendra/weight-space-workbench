@@ -4,13 +4,17 @@ description: "Use when a user asks to inspect, directly edit, improve, or compar
 license: MIT
 compatibility: Requires access to model artifacts and a model-specific evaluator for empirical claims. Included editing utility supports single-file Safetensors checkpoints only.
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
   category: machine-learning
 ---
 
 # Weight-space experiment loop
 
 Run the experiment as a sequence of evidence-bearing stages. Do not skip stages because a user asks for a quick edit; reduce scope instead. Before starting, confirm the model/checkpoint and evaluator are actually available. Never treat a synthetic example, planned command, or guessed tensor meaning as an experiment result.
+
+## Route the request
+
+Before loading stage skills, read `references/routing.md` and choose the narrowest entry point that fits the user's intent. A broad request to change or compare weights uses this full-loop skill; a focused request uses its matching stage skill. An explanation request does not create an experiment. An explicit stage request narrows scope but never waives that stage's prerequisites. If a prerequisite is missing, stop at the earliest blocked stage and state the exact missing artifact or decision.
 
 ## Sequence
 
@@ -43,6 +47,7 @@ Report the model and immutable revision, baseline/candidate hashes, edit receipt
 
 ## Supporting files
 
+- Read `references/routing.md` to choose a skill, respect stage prerequisites, and decide when a new route is justified.
 - Run `python3 scripts/validate_run_record.py RUN_RECORD.json` from the skill directory before declaring the loop complete. A `keep` decision also requires candidate metrics and an uncertainty method.
 - Use `assets/run-record.json` and `assets/edit-hypothesis.md` when the repository-level templates are not available.
 - Read `references/stage-handoffs.md` when a required artifact is missing or a stage needs to stop safely.
