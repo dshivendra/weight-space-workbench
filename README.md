@@ -8,7 +8,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/dshivendra/weight-space-workbench?style=flat)](https://github.com/dshivendra/weight-space-workbench/forks)
 ![README views](https://visitor-badge.laobi.icu/badge?page_id=dshivendra.weight-space-workbench&left_text=README%20views)
 
-Weight Space Workbench gives researchers and coding agents a small, auditable process for changing a model checkpoint. It records the goal, baseline, edit hypothesis, bounded change, paired evaluation, guardrails, and final decision. It is a set of portable [Agent Skills](https://agentskills.io/) plus a few narrow Python tools—not an automatic optimizer or a universal model evaluator.
+Weight Space Workbench gives researchers and coding agents a small, auditable process for changing a model checkpoint. It records the goal, baseline, edit hypothesis, bounded change, paired evaluation, guardrails, and final decision. It is a set of portable [Agent Skills](https://agentskills.io/) plus a few narrow Python tools—not an automatic optimizer or a universal model evaluator. The broker and adapter contract defines the architecture-neutral target and marks which controls are not yet implemented.
 
 > **Research tooling, not a safety certification.** Offline metric gains do not establish general improvement or physical safety. For robot policies, evaluate in simulation first and use bounded, human-supervised hardware tests only after the required reviews.
 
@@ -87,6 +87,10 @@ python3 scripts/apply_safetensors_delta.py \
 
 The script emits a JSON receipt with source and candidate hashes, tensor coordinate, before/after values, and bounds. It does not infer tensor meaning, prove the rest of a model is compatible, or evaluate model behavior.
 
+### Negotiate adapter capabilities
+
+`scripts/negotiate_capabilities.py` computes the intersection of broker, adapter, artifact, and policy operation declarations and fails closed for an unsupported request. It is a reusable contract helper; it does **not** isolate an agent or make a local CLI a security boundary. A deployment can claim bypass-resistant enforcement only when an isolated broker owns artifact access and calls this check before dispatching each operation. The shipped adapter profile is in [`adapters/safetensors-local-v1/capabilities.json`](adapters/safetensors-local-v1/capabilities.json); its exact boundary is documented in [the broker and adapter contract](docs/ADAPTER_AND_BROKER_CONTRACT.md).
+
 ### Compare preregistered metrics
 
 `scripts/compare_metrics.py` accepts two JSON objects containing numeric metrics. Guard limits and improvement thresholds must be chosen before looking at candidate results.
@@ -107,7 +111,7 @@ The script does not calculate uncertainty. `--uncertainty-status passed` is a ca
 
 ## What it supports
 
-- **Included:** a single floating-point scalar edit in a single Safetensors file, a metric comparison utility, a non-overwriting skill installer, and an offline synthetic demo.
+- **Included:** a single floating-point scalar edit in a single Safetensors file, a capability-intersection helper and narrow adapter descriptor, a metric comparison utility, a non-overwriting skill installer, and an offline synthetic demo.
 - **Not included:** a universal model loader/evaluator, automatic tensor selection, optimizer-based fine-tuning, sharded checkpoint editing, quantized or packed weight editing, or a supported Octo/JAX/Flax checkpoint adapter.
 
 Octo's published checkpoint format is not handled by the Safetensors utility. A framework-specific adapter and a model-specific evaluator are required before applying this workflow to Octo or another unsupported format. See [supported formats](docs/SUPPORTED_FORMATS.md).
@@ -145,6 +149,7 @@ The README views badge is provided by [Visitor Badge](https://visitor-badge.laob
 
 ```text
 .agents/skills/   Portable Agent Skills with references, scripts, assets, and eval cases
+adapters/         Versioned capability profiles for implemented format adapters
 docs/             Workflow, formats, and authoring guidance
 examples/         Synthetic, fully transparent demonstration
 scripts/          Bounded utilities and validation
