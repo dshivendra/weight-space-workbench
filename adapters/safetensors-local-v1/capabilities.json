@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "adapter_id": "safetensors-local-v1",
+  "artifact_formats": ["safetensors-single-file"],
+  "runtime_targets": ["cpu"],
+  "address_schemes": ["tensor-name-and-coordinate"],
+  "operations": [
+    "read_tensor_metadata",
+    "read_bounded_slice",
+    "scalar_delta_candidate",
+    "verify_candidate_digest",
+    "write_edit_receipt"
+  ],
+  "capabilities": {
+    "address_resolution": true,
+    "bounded_tensor_read": true,
+    "scalar_tensor_edit": true,
+    "candidate_materialization": true,
+    "candidate_digest_verification": true,
+    "execution_probe": false,
+    "graph_inspection": false,
+    "graph_migration": false,
+    "quantized_edit": false,
+    "sharded_edit": false,
+    "tied_parameter_awareness": false,
+    "atomic_canonical_commit": false,
+    "publish": false
+  },
+  "limits": {
+    "max_edit_coordinates": 1,
+    "max_edit_operations_per_candidate": 1,
+    "source_overwrite": false,
+    "candidate_overwrite": false
+  }
+}
