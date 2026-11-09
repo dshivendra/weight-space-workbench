@@ -6,6 +6,8 @@
 
 The script loads the full checkpoint into CPU memory. Plan for memory above the checkpoint size because loading and reserializing tensors requires additional memory. It is not an in-place or sharded-checkpoint editor.
 
+The adapter's machine-readable operation profile is [`adapters/safetensors-local-v1/capabilities.json`](../adapters/safetensors-local-v1/capabilities.json). The capability-intersection helper rejects operations absent from any declared capability set. This repository does not yet ship an isolated broker, so the helper and descriptor alone do not prevent an agent with direct shell or filesystem access from bypassing the CLI. See the [broker and adapter contract](ADAPTER_AND_BROKER_CONTRACT.md) for the target trust boundary.
+
 ## Not handled by the bundled editor
 
 - JAX/Flax/Orbax or Octo `.msgpack` checkpoints

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Define the architecture-neutral broker and adapter contract, including explicit capability limits for the local Safetensors profile.
+- Add fail-closed capability intersection and tests for unsupported operations, unsupported formats, malformed descriptors, and absent commit/execution capabilities.
+
 ## 0.2.0 — 2026-11-08
 
 - Strengthen skill descriptions, provenance, output contracts, and keep/revert rules.
